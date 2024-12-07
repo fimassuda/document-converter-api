@@ -8,6 +8,6 @@ export class AppController {
   @Get()
   @HttpCode(200)
   healthCheck() {
-    return { status: 'ok' };
+    return this.appService.healthCheck();
   }
 }
