@@ -1,14 +1,49 @@
-# Document Converter Take Home
+# Document Converter API
 
 An API to convert documents between three different formats
 
-## Format #1: String
+## Architecture
+
+To make an extendable solution. I implemented the solution using the Canonical Data Model (CDM) pattern from the [Enterprise Integration Patterns (EIP)](https://www.enterpriseintegrationpatterns.com/patterns/messaging/CanonicalDataModel.html).
+
+![canonical-data-model](canonical-data-model.png)
+
+To add new formats, you only need to implement the `FormatAdapter` interface and register it with the `DocumentsService`.
+
+> **Disclaimer:** I made heavily use of AI to work on this project as AI is now part of my day-to-day work. From learning new concepts in a structured way like explaining NestJS to pair-programming solutions, helping me with implementation and testing.
+
+## API
+
+The API has one endpoint `/documents/convert` that accepts a request body with the following fields:
+
+- `file`: the document content in the source format
+- `convertFrom`: the source format
+- `convertTo`: the target format
+- `lineSeparator`: the line separator character
+- `elementSeparator`: the element separator character
+
+The response is a raw content depending on the target format.
+
+- `JSON`:
+  - Content-Type: application/json
+  - Response: a JSON string
+- `XML`:
+  - Content-Type: application/xml
+  - Response: an XML string
+- `String`:
+  - Content-Type: text/plain
+  - Response: a string
+
+### Format #1: String
 
 String data is composed of 'segments' (i.e. lines), each of which is composed of multiple 'elements' (i.e. data values).
-Segments/lines are delineated by a line separator character, and elements within a segment are delineated by element separator
-characters. In the example below, the separator characters are ~ and *.
 
-Example
+Segments/lines are delineated by a line separator character, and elements within a segment are delineated by element separator
+characters.
+
+In the example below, the separator characters are ~ and *.
+
+**Example:**
 
 ```
 ProductID*4*8*15*16*23~
@@ -17,11 +52,14 @@ AddressID*42*108*3*14~
 ContactID*59*26~
 ```
 
-The example above is composed of 4 segments. Each segment is composed of a segment name followed by a number of elements. The
-first two segments have five elements, the third has four, and the fourth has two.
+The example above is composed of 4 segments. Each segment is composed of a segment name followed by a number of elements. 
 
-## Format #2: JSON
-Constraints:
+The first two segments have five elements, the third has four, and the fourth has two.
+
+### Format #2: JSON
+
+**Constraints:**
+
 Segments (lines) are nested in arrays and objects where the keys are the segment names followed by an incrementing integer from 1 ... # of elements.
 
 ```json
@@ -59,7 +97,7 @@ Segments (lines) are nested in arrays and objects where the keys are the segment
 }
 ```
 
-Format #3: XML
+### Format #3: XML
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -104,21 +142,6 @@ Format #3: XML
   must be completely written by you.
 - You will need to demo that your solution works for the example input in format #1 (string) that is attached.
 
-## Notes
-
-- Consider how extensible your solution would be if we introduced 3 additional formats.
-- The examples for each of the formats above are equivalent to each other.
-- Orderful's back end is built in Typescript using Nest.js & Node/Express. Ideally, your solution will be built with something similar, but
-  overall we'd prefer a well-built & well-understood solution using technologies you're comfortable with over one where you're less sure of
-  yourself.
-
-## What to expect in the interview
-- We'll get you to demo your solution and walk us through the app (so make sure it runs!), and then we'll talk about the code.
-
-## Description
-
-Document converter.
-
 ## Project setup
 
 ```bash
@@ -149,4 +172,100 @@ $ yarn run test:e2e
 
 # test coverage
 $ yarn run test:cov
+```
+
+## Test the API
+
+The API is available at http://localhost:3000
+
+To test the API, you can use the following cURL commands:
+
+Convert a JSON to string:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.json"' \
+--form 'convertTo="STRING"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="JSON"'
+```
+
+Convert a JSON to XML:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.json"' \
+--form 'convertTo="XML"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="JSON"'
+```
+
+Convert a XML to string:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.xml"' \
+--form 'convertTo="STRING"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="XML"'
+```
+
+Convert a XML to JSON:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.xml"' \
+--form 'convertTo="JSON"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="XML"'
+```
+
+Convert a string to XML:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.txt"' \
+--form 'convertTo="XML"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="STRING"'
+```
+
+Convert a string to JSON:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"example.txt"' \
+--form 'convertTo="JSON"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="STRING"'
+```
+
+### Test the provided example:
+
+Convert a string to JSON:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"string_test.txt"' \
+--form 'convertTo="JSON"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="STRING"'
+```
+
+Convert a string to XML:
+
+```bash
+$ curl --location 'http://localhost:3000/documents/convert' \
+--form 'file=@"string_test.txt"' \
+--form 'convertTo="XML"' \
+--form 'lineSeparator="~"' \
+--form 'elementSeparator="*"' \
+--form 'convertFrom="STRING"'
 ```
