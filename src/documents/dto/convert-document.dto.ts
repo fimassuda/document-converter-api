@@ -1,9 +1,15 @@
-import { ConvertTo } from '../enums/convert-to.enum';
+import { SupportedFileType } from '../enums/supported-file-type.enum';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class ConvertDocumentDto {
-  @IsEnum(ConvertTo)
-  convertTo: ConvertTo;
+  @IsEnum(SupportedFileType)
+  convertTo: SupportedFileType;
+
+  @IsEnum(SupportedFileType)
+  convertFrom: SupportedFileType;
+
+  @IsString()
+  content?: string;
 
   @IsOptional()
   @IsString()
